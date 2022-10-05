@@ -3,5 +3,7 @@
     public class VariableConexionPostgreSQL
     {
 
+        int hola;
+        
     }
 }
