@@ -7,6 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Models\Consultas\ConsultaPostgre.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Models\Consultas\ConsultaPostgre.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Npgsql" Version="6.0.7" />
   </ItemGroup>
 
