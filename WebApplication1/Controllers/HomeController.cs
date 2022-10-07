@@ -4,6 +4,8 @@ using System.Diagnostics;
 using WebApplication1.Models;
 using static WebApplication1.Util.VariableConexionPostgreSQL;
 using WebApplication1.Models.Conexiones;
+using WebApplication1.Models.DTOs;
+using WebApplication1.Models.Consultas;
 
 namespace WebApplication1.Controllers
 {
@@ -18,6 +20,8 @@ namespace WebApplication1.Controllers
 
         public IActionResult Index(ConexionPostgreSQL conexionPostgreSQL)
         {
+            // Profesor
+
             System.Console.WriteLine("[INFORMACIÓN-HomeController-Index] Entra en Index");
 
             //CONSTANTES
@@ -30,37 +34,34 @@ namespace WebApplication1.Controllers
             //Se genera una conexión a PostgreSQL y validamos que esté abierta fuera del método
             var estadoGenerada = "";
             NpgsqlConnection conexionGenerada = new NpgsqlConnection();
-            NpgsqlCommand consulta = new NpgsqlCommand();
+            List<AlumnoDTO> listAlumnoDTO = new List<AlumnoDTO>();
+
+            //NpgsqlCommand consulta = new NpgsqlCommand();
             conexionGenerada = conexionPostgreSQL.GeneraConexion(HOST, PORT, DB, USER, PASS);
             estadoGenerada = conexionGenerada.State.ToString();
             System.Console.WriteLine("[INFORMACIÓN-HomeController-Index] Estado conexión generada: " + estadoGenerada);
 
-            //Se define la consulta a realizar y se guarda el resultado
-            try
-            {
+            //Se realiza la consulta y se guarda una lista de alumnosDTO
+            listAlumnoDTO = ConsultasPostgreSQL.ConsultaSelectPostgreSQL(conexionGenerada);
+            int cont = listAlumnoDTO.Count();
+            System.Console.WriteLine("[INFORMACIÓN-HomeController-Index] Lista compuesta por: " + cont + " alumnos");
+            foreach (AlumnoDTO alumno in listAlumnoDTO)
+                System.Console.WriteLine("[INFORMACIÓN-HomeController-Index] Lista alumnos: {0} {1} {2} {3}", alumno.id_alumno,
+                 alumno.nombre, alumno.apellidos, alumno.email);
+            
 
-                consulta = new NpgsqlCommand("SELECT * FROM \"proyectoEclipse\".\"alumnos\"", conexionGenerada);
-                NpgsqlDataReader resultadoConsulta = consulta.ExecuteReader();
-                while (resultadoConsulta.Read())
-                {
-
-                    Console.Write("{0}\t{1}\t{2}\t{3} \n",
-                        resultadoConsulta[0], resultadoConsulta[1], resultadoConsulta[2], resultadoConsulta[3]);
-
-                }
-
-                System.Console.WriteLine("[INFORMACIÓN-HomeController-Index] Cierre conexión y conjunto de datos");
-                conexionGenerada.Close();
-                resultadoConsulta.Close();
-
+            List<AlumnoAsignaturaDTO> listAlumnoAsignaturaDTO = new List<AlumnoAsignaturaDTO>();
+            listAlumnoAsignaturaDTO = ConsultasPostgreSQL.ConsultaSelectPostgreSQL2(conexionGenerada);
+            int cont2 = listAlumnoAsignaturaDTO.Count();
+            System.Console.WriteLine("[INFORMACIÓN-HomeController-Index] Lista compuesta por: " + cont2 + " alumnosAsignaturas");
+            
+            foreach(AlumnoAsignaturaDTO alumnoAs in listAlumnoAsignaturaDTO) { 
+            System.Console.WriteLine("[INFORMACIÓN-HomeController-Index] Lista alumnos y asignatura: {0} {1} {2}", alumnoAs.nombre,
+                alumnoAs.apellidos, alumnoAs.nombreAs);
             }
-            catch (Exception e)
-            {
 
-                System.Console.WriteLine("[INFORMACIÓN-HomeController-Index] Error al ejecutar consulta: " + e);
-                conexionGenerada.Close();
-
-            }
+            conexionGenerada.Close();
+            
 
             return View();
         }

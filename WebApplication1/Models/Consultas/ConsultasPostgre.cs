@@ -1,29 +1,27 @@
 ﻿using Npgsql;
 using WebApplication1.Models.DTOs;
+using System.Data;
 
 namespace WebApplication1.Models.Consultas
 {
-    public class ConsultasPostgre
+    public class ConsultasPostgreSQL
     {
-        public static List<AlumnoDTO> generaConsultas(NpgsqlConnection conexionGenerada)
+        public static List<AlumnoDTO> ConsultaSelectPostgreSQL(NpgsqlConnection conexionGenerada)
         {
-            List<AlumnoDTO> listaAlumnos = new List<AlumnoDTO>();
+            List<AlumnoDTO> listAlumnos = new List<AlumnoDTO>();
             try
             {
-
+                //Se define y ejecuta la consulta Select
                 NpgsqlCommand consulta = new NpgsqlCommand("SELECT * FROM \"proyectoEclipse\".\"alumnos\"", conexionGenerada);
                 NpgsqlDataReader resultadoConsulta = consulta.ExecuteReader();
-                List<AlumnoDTO> lista = new List<AlumnoDTO>();
-                while (resultadoConsulta.Read())
-                {
 
-                    Console.Write("{0}\t{1}\t{2}\t{3} \n",
-                        resultadoConsulta[0], resultadoConsulta[1], resultadoConsulta[2], resultadoConsulta[3]);
-                    lista.Add(new AlumnoDTO(Convert.ToInt32(resultadoConsulta[1]), resultadoConsulta[1].ToString(), resultadoConsulta[2].ToString(), resultadoConsulta[3].ToString()));
-                }
+                //Paso de DataReader a lista de alumnoDTO
+                listAlumnos = DTOs.ADTO.ReaderAListDTO.ReaderAListAlumnoDTO(resultadoConsulta);
+                int cont = listAlumnos.Count();
+                System.Console.WriteLine("[INFORMACIÓN-ConsultasPostgreSQL-ConsultaSelectPostgreSQL] Lista compuesta por: " + cont + " alumnos");
 
-                System.Console.WriteLine("[INFORMACIÓN-HomeController-Index] Cierre conexión y conjunto de datos");
-                conexionGenerada.Close();
+                System.Console.WriteLine("[INFORMACIÓN-ConsultasPostgreSQL-ConsultaSelectPostgreSQL] Cierreconjunto de datos");
+                
                 resultadoConsulta.Close();
 
             }
@@ -34,9 +32,40 @@ namespace WebApplication1.Models.Consultas
                 conexionGenerada.Close();
 
             }
-
-            return listaAlumnos;
+            return listAlumnos;
         }
+
+        public static List<AlumnoAsignaturaDTO> ConsultaSelectPostgreSQL2(NpgsqlConnection conexionGenerada)
+        {
+            List<AlumnoAsignaturaDTO> listAlumnoAsignatura = new List<AlumnoAsignaturaDTO>();
+            try
+            {
+                //Se define y ejecuta la consulta Select
+                NpgsqlCommand consulta = new NpgsqlCommand("SELECT al.nombre, al.apellidos,asi.nombre FROM \"proyectoEclipse\".\"alumnos\" al INNER JOIN \"proyectoEclipse\".rel_alumn_asig r ON al.id_alumno = r.id_alumno\r\n    INNER JOIN \"proyectoEclipse\".asignaturas asi ON r.id_asignatura = asi.id_asignatura", conexionGenerada);
+                NpgsqlDataReader resultadoConsulta = consulta.ExecuteReader();
+
+                //Paso de DataReader a lista de alumnoDTO
+                listAlumnoAsignatura = DTOs.ADTO.ReaderAListDTO.ReaderAListAlumnoAsignaturaDTO(resultadoConsulta);
+                int cont = listAlumnoAsignatura.Count();
+                System.Console.WriteLine("[INFORMACIÓN-ConsultasPostgreSQL-ConsultaSelectPostgreSQL] Lista compuesta por: " + cont + " alumnos con asignaturas");
+
+                System.Console.WriteLine("[INFORMACIÓN-ConsultasPostgreSQL-ConsultaSelectPostgreSQL] Cierre conjunto de datos");
+                
+                resultadoConsulta.Close();
+
+            }
+            catch (Exception e)
+            {
+
+                System.Console.WriteLine("[INFORMACIÓN-HomeController-Index] Error al ejecutar consulta: " + e);
+                conexionGenerada.Close();
+
+            }
+            return listAlumnoAsignatura;
+        }
+
+
+
     }
-    
+
 }
